@@ -37,34 +37,30 @@ def all():
     # print(res)
     return res
 
+
 @hug.post('/addDoc')
 def addDoc(age, name):
     es = Elasticsearch()
-    print(age, name)
-    res = es.index(index="my-index", doc_type="_doc", body={"age":age,"name":name,"name1":name})
+    # print(age, name)
+    res = es.index(index="my-index", doc_type="_doc",
+                   body={"age": age, "name": name, "name1": name})
     print(res['result'])
-    # res = es.search(index="my-index", body={
-    #     "query": {
-    #         "match_all": {}
-    #     }})
-    # print(res)
     return res
 
 
 @hug.get('/sayt')
 def sayt(q):
     es = Elasticsearch()
-    print(q)
+    # print(q)
     res = es.search(index="my-index", body={
         "query": {
             "multi_match": {
                 "query": q,
-                "type": "bool_prefix",
+                "type": "most_fields",
                 "fields": [
                     "name",
                     "name._2gram",
-                    "name._3gram",
-                    "name._4gram"
+                    "name._3gram"
                 ]
             }
         }})
@@ -75,13 +71,14 @@ def sayt(q):
 @hug.get('/comp')
 def comp(q):
     es = Elasticsearch()
-    print(q)
+    # print(q)
     res = es.search(index="my-index", body={
         "query": {
             "function_score": {
                 "query": {
                     "multi_match": {
                         "query": q,
+                        "type": "most_fields",
                         "fields": [
                             "name",
                             "name._2gram",
@@ -95,6 +92,15 @@ def comp(q):
                     }
                 }
             }
-        }})
+        },
+        "suggest": {
+            "my-suggest-1": {
+                "prefix": q,
+                "completion": {
+                    "field": "name1"
+                }
+            }
+        }
+    })
     # print(res)
     return res

@@ -1,5 +1,7 @@
 # Search
-This repository contains code to test search engines like Elasticsearch and Solr.
+This repository contains code to test and compare search engines like Elasticsearch and Solr.
+
+It is still a work in progress! Any contributions/suggestions are welcome. UI will be improved soon :P
 
 ## Setup
 The index.html is a simple html file, and can be run in any browser.
@@ -16,6 +18,10 @@ Start the file by using
 ### Elasticsearch
 Download and run elasticsearch from [here](https://www.elastic.co/downloads/elasticsearch). Version 7.6.2 is used in this project.
 
+The elasticsearch python client is used in the suggestion API. The client can be installed using
+
+    pip3 install elasticsearch
+
 To start the elasticsearch server, run
 
     path/to/elasticsearch-7.6.2/bin/elasticsearch
@@ -29,8 +35,7 @@ Create the mapping using the following:
                     "type": "float"
                 },
                 "name": {
-                    "type": "search_as_you_type",
-                    "max_shingle_size": 3
+                    "type": "search_as_you_type"
                 },
                 "name1": {
                     "type": "completion"
@@ -38,3 +43,7 @@ Create the mapping using the following:
             }
         }
     }'
+
+To delete the index:
+
+    curl -X DELETE "localhost:9200/my-index"

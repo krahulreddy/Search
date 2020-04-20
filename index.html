@@ -2,30 +2,36 @@
 <html>
 
 <body onload="updateTable()">
-    <form class="form-inline" role="search" accept-charset="UTF-8" action="search.html">
-        <div class="form-group">
-            <input id="q" name="q" type="text" oninput="suggester()" placeholder="Search" autocomplete="off"
-                list="suglist">
-            <datalist id="suglist">
-                <!-- <option value="Monaco">
-            <option value="monaco"> -->
-                <!-- <option value="monday"> -->
-            </datalist>
-        </div>
-    </form>
-
+    <h3>Elasticsearch</h3>
+    search_as_you_type: <input id="q1" name="q1" type="text" oninput="suggester(1)" placeholder="Search"
+        autocomplete="off" list="suglist1">
+    <datalist id="suglist1">
+    </datalist>
     <br>
-    Create new document:
-        <br>
+    <br>
+    completion suggester: <input id="q2" name="q2" type="text" oninput="suggester(2)" placeholder="Search"
+        autocomplete="off" list="suglist2">
+    <datalist id="suglist2">
+    </datalist>
+    <br>
+    <br>
+    both the above: <input id="q3" name="q3" type="text" oninput="suggester(3)" placeholder="Search"
+        autocomplete="off" list="suglist3">
+    <datalist id="suglist3">
+    </datalist>
+    <br>
+    <h3>Create new document:</h3>
+    <form>
         Score <input id="score">
         Name <input id="name">
         <button onclick="addDoc()">Update table</button>
-    <table id="table" style="align-items: center; border-color: black; margin: 5px;">
-        <tr>
-            <th>Name</th>
-            <th>Score</th>
-        </tr>
-    </table>
+        <h3>All documents</h3>
+        <table id="table" style="align-items: center; border-color: black; margin: 5px;">
+            <tr>
+                <th>Name</th>
+                <th>Score</th>
+            </tr>
+        </table>
 
 </body>
 
@@ -34,11 +40,10 @@
 
 <script type="text/javascript">
 
-    function addDoc()
-    {
+    function addDoc() {
         var name = document.getElementById("name").value;
         var age = document.getElementById("score").value;
-        if(age === "" || name === "")
+        if (age === "" || name === "")
             return;
 
         var xmlhttp = new XMLHttpRequest();
@@ -54,14 +59,14 @@
         xmlhttp.open("POST", url, true);
 
         xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xmlhttp.send("age="+age+"&name="+name);
+        xmlhttp.send("age=" + age + "&name=" + name);
         // updateTable();
     }
     function updateTable() {
 
         var xmlhttp = new XMLHttpRequest();
         var url = "http://localhost:8000/all/";
-        // console.log(url);
+        console.log("Updating table");
 
         xmlhttp.onreadystatechange = function () {
             // console.log(this.status, this.responseText);
@@ -81,12 +86,16 @@
         xmlhttp.open("GET", url, true);
         xmlhttp.send();
     }
-    function suggester() {
-        var query = document.getElementById("q").value;
+    function suggester(mode) {
+        var query = document.getElementById("q" + mode).value;
         if (query === "")
             return;
         var xmlhttp = new XMLHttpRequest();
-        var url = "http://localhost:8000/comp/?q=" + query;
+        var url;
+        if (mode == 1)
+            url = "http://localhost:8000/sayt/?q=" + query;
+        else
+            url = "http://localhost:8000/comp/?q=" + query;
         console.log(url);
 
         xmlhttp.onreadystatechange = function () {
@@ -96,16 +105,32 @@
                 var hits = myArr['hits'].hits;
                 // console.log(hits, hits.length);
                 var options = '';
-                for (var i = 0; i < hits.length; i++) {
-                    res = '';
-                    if (hits[i]._source.hasOwnProperty('name'))
-                        res += hits[i]._source.name;
-                    if (res === '')
-                        res = query;
-                    // console.log(res);
-                    options += '<option value="' + res + "[" + hits[i]._score + "]" + '" />';
+                if (mode != 2) {
+                    for (var i = 0; i < hits.length; i++) {
+                        res = '';
+                        if (hits[i]._source.hasOwnProperty('name'))
+                            res += hits[i]._source.name;
+                        if (res === '')
+                            res = query;
+                        // console.log(res);
+                        options += '<option value="' + res + "[" + hits[i]._score + "]" + '" />';
+                    }
                 }
-                document.getElementById('suglist').innerHTML = options;
+                if (mode != 1) {
+                    var sugg = myArr['suggest']['my-suggest-1'][0]['options'];
+                    console.log(sugg, sugg.length);
+                    hits = sugg;
+                    for (var i = 0; i < hits.length; i++) {
+                        res = '';
+                        if (hits[i]._source.hasOwnProperty('name'))
+                            res += hits[i]._source.name;
+                        if (res === '')
+                            res = query;
+                        // console.log(res);
+                        options += '<option value="' + res + "[" + hits[i]._score + "]" + '" />';
+                    }
+                }
+                document.getElementById('suglist' + mode).innerHTML = options;
             }
         };
         xmlhttp.open("GET", url, true);
