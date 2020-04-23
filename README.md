@@ -61,6 +61,13 @@ The pysolr python client is used in the suggestion API. The client can be instal
 
     pip3 install pysolr
 
+---
+**NOTE**
+
+pysolr is currently used only for addition of new docs. Searching is done using urllib.request.read().
+
+---
+
 To start the solr server, run
 
     path/to/solr-8.5.1/bin/solr start -c

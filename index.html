@@ -217,7 +217,7 @@
                     if (res === '')
                         res = query;
                     // console.log(res);
-                    options += '<option value="' + res + '" />';
+                    options += '<option value="' + res  + '[' + hits[i].age + ']' + '" />';
                 }
                 document.getElementById('suglist').innerHTML = options;
             }

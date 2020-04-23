@@ -1,5 +1,6 @@
 import hug
 from urllib.request import urlopen
+import urllib
 import pysolr
 import json
 
@@ -50,7 +51,8 @@ def addDoc(age, name):
 
 @hug.get('/search')
 def search(q):
-    connection = urlopen('http://localhost:8983/solr/my-index/select?q=name:\"' + q + '\"')
+    q = q.replace(' ', '+')
+    url = 'http://localhost:8983/solr/my-index/select?q=name:\"' + q + '\"'
+    connection = urlopen(url)
     res = json.load(connection)
-    print(res)
     return res
