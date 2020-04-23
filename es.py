@@ -1,10 +1,6 @@
-from datetime import datetime
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 import hug
-
-from functools import wraps
-
 
 @hug.response_middleware()
 def CORS(request, response, resource):

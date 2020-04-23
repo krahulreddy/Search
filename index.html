@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-<body onload="updateTable()">
+<body onload="updateTables()">
     <h3>Elasticsearch</h3>
     search_as_you_type: <input id="q1" name="q1" type="text" oninput="suggester(1)" placeholder="Search"
         autocomplete="off" list="suglist1">
@@ -15,23 +15,40 @@
     </datalist>
     <br>
     <br>
-    both the above: <input id="q3" name="q3" type="text" oninput="suggester(3)" placeholder="Search"
-        autocomplete="off" list="suglist3">
+    both the above: <input id="q3" name="q3" type="text" oninput="suggester(3)" placeholder="Search" autocomplete="off"
+        list="suglist3">
     <datalist id="suglist3">
     </datalist>
     <br>
+    <br>
+
+    <h3>Solr</h3>
+    Simple search: <input id="q" name="q" type="text" oninput="solrSuggester()" placeholder="Search"
+        autocomplete="off" list="suglist">
+    <datalist id="suglist">
+    </datalist>
+    <br>
+
     <h3>Create new document:</h3>
-    <form>
-        Score <input id="score">
-        Name <input id="name">
-        <button onclick="addDoc()">Update table</button>
-        <h3>All documents</h3>
-        <table id="table" style="align-items: center; border-color: black; margin: 5px;">
-            <tr>
-                <th>Name</th>
-                <th>Score</th>
-            </tr>
-        </table>
+    Score <input id="score">
+    Name <input id="name">
+    <button onclick="addDoc()">Update table</button>
+    <h3>All documents</h3>
+    <h4>Elasticsearch</h4>
+    <table id="table1" style="align-items: center; border-color: black; margin: 5px;">
+        <tr>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+    </table>
+    <br>
+    <h4>Solr</h4>
+    <table id="table2" style="align-items: center; border-color: black; margin: 5px;">
+        <tr>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+    </table>
 
 </body>
 
@@ -53,20 +70,39 @@
         xmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 console.log("Done");
-                updateTable();
+                updateTables();
             }
         };
         xmlhttp.open("POST", url, true);
 
         xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xmlhttp.send("age=" + age + "&name=" + name);
-        // updateTable();
+
+
+        xmlhttp = new XMLHttpRequest();
+        url = "http://localhost:8001/addDoc/";
+        console.log(url);
+
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log("Done");
+                updateTables();
+            }
+        };
+        xmlhttp.open("POST", url, true);
+
+        xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xmlhttp.send("age=" + age + "&name=" + name);
+
+
+
+        // updateTables();
     }
-    function updateTable() {
+    function updateTables() {
 
         var xmlhttp = new XMLHttpRequest();
         var url = "http://localhost:8000/all/";
-        console.log("Updating table");
+        // console.log("Updating table");
 
         xmlhttp.onreadystatechange = function () {
             // console.log(this.status, this.responseText);
@@ -80,7 +116,29 @@
                     options += '<tr><td>' + hits[i]._source.name + "</td><td>" + hits[i]._source.age + '</td> </tr>';
                 }
                 // console.log(options);
-                document.getElementById('table').innerHTML = options;
+                document.getElementById('table1').innerHTML = options;
+            }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+
+        xmlhttp = new XMLHttpRequest();
+        url = "http://localhost:8001/all/";
+        // console.log("Updating table");
+
+        xmlhttp.onreadystatechange = function () {
+            // console.log(this.status, this.responseText);
+            if (this.readyState == 4 && this.status == 200) {
+                var myArr = JSON.parse(this.responseText);
+                var hits = myArr['response']['docs'];
+                console.log(hits, hits.length);
+                var options = '<th>Name</th><th>Score</th>';
+                for (var i = 0; i < hits.length; i++) {
+                    // console.log(hits[i]._source);
+                    options += '<tr><td>' + hits[i].name + "</td><td>" + hits[i].age + '</td> </tr>';
+                }
+                // console.log(options);
+                document.getElementById('table2').innerHTML = options;
             }
         };
         xmlhttp.open("GET", url, true);
@@ -131,6 +189,37 @@
                     }
                 }
                 document.getElementById('suglist' + mode).innerHTML = options;
+            }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+    }
+    function solrSuggester() {
+        var query = document.getElementById("q").value;
+        if (query === "")
+            return;
+        var xmlhttp = new XMLHttpRequest();
+        var url;
+        url = "http://localhost:8001/search/?q=" + query;
+        console.log(url);
+
+        xmlhttp.onreadystatechange = function () {
+            // console.log(this.status, this.responseText);
+            if (this.readyState == 4 && this.status == 200) {
+                var myArr = JSON.parse(this.responseText);
+                var hits = myArr['response']['docs'];
+                // console.log(hits, hits.length);
+                var options = '';
+                for (var i = 0; i < hits.length; i++) {
+                    res = '';
+                    if (hits[i].hasOwnProperty('name'))
+                        res += hits[i].name;
+                    if (res === '')
+                        res = query;
+                    // console.log(res);
+                    options += '<option value="' + res + '" />';
+                }
+                document.getElementById('suglist').innerHTML = options;
             }
         };
         xmlhttp.open("GET", url, true);
