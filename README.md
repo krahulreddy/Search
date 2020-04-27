@@ -20,6 +20,11 @@ Start the file by using
 
     hug -f filename
 
+For our project, we have es.py and solr.py. We need to host them on two differenct ports
+
+    hug -f es.py -p 8000
+    hug -f solr.py -p 8001
+
 ### Elasticsearch
 Download and run elasticsearch from [here](https://www.elastic.co/downloads/elasticsearch). Version 7.6.2 is used in this project.
 
@@ -75,6 +80,12 @@ To start the solr server, run
 Create the my-index collection using
 
     path/to/solr-8.5.1/bin/solr create -c my-index
+
+This index is now created with _default configset, one shard and one replica. This can be changed by using the options 
+
+* -s => number of shards
+* -rf => replication factor
+* -d => config directory
 
 Currently, the schema used is default. Changes will be made during further testing.
 
